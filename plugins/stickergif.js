@@ -37,49 +37,54 @@ let handler = async (m, { conn, args, usedPrefix }) => {
         const media = await conn.downloadAndSaveMediaMessage(encmedia)
         const ran = getRandom('.webp')
         await ffmpeg(`./${media}`)
-            .inputFormat(media.split('.')[1])
-            .on('start', function (cmd) {
-                console.log(`Started : ${cmd}`)
-            })
-            .on('error', function (err) {
-                console.log(`Error : ${err}`)
-                fs.unlinkSync(media)
-                tipe = media.endsWith('.mp4') ? 'video' : 'gif'
-                m.reply(`\`\`\`Error al convertir tu stiker, puede ser el tamaño del video/gif\`\`\``)
-            })
-            .on('end', function () {
-                console.log('Finish')
-                buff = fs.readFileSync(ran)
-                conn.sendMessage(m.chat, buff, MessageType.sticker, { quoted: m })
-                fs.unlinkSync(media)
-                fs.unlinkSync(ran)
-            })
-            .addOutputOptions([`-vcodec`, `libwebp`, `-vf`, `scale='min(320,iw)':min'(320,ih)':force_original_aspect_ratio=decrease,fps=15, pad=320:320:-1:-1:color=white@0.0, split [a][b]; [a] palettegen=reserve_transparent=on:transparency_color=ffffff [p]; [b][p] paletteuse`])
-            .toFormat('webp')
-            .save(ran)
+							.inputFormat(media.split('.')[1])
+							.on('start', function (cmd) {
+								console.log(`Started : ${cmd}`)
+							})
+							.on('error', function (err) {
+								console.log(`Error : ${err}`)
+								fs.unlinkSync(media)
+								tipe = media.endsWith('.mp4') ? 'video' : 'gif'
+								reply(`❌ Error, en el momento de la conversión ${tipe}del stiker`)
+							})
+							.on('end', function () {
+								console.log('Finish')
+								exec(`webpmux -set exif ${addMetadata('Samu330NyanBot', authorname)} ${ran} -o ${ran}`, async (error) => {
+									if (error) return reply(mess.error.stick)
+									client.sendMessage(from, fs.readFileSync(ran), sticker, {quoted: mek})
+									fs.unlinkSync(media)
+									fs.unlinkSync(ran)
+								})
+								/*client.sendMessage(from, fs.readFileSync(ran), sticker, {quoted: mek})
+								fs.unlinkSync(media)
+								fs.unlinkSync(ran)*/
+							})
+							.addOutputOptions([`-vcodec`,`libwebp`,`-vf`,`scale='min(320,iw)':min'(320,ih)':force_original_aspect_ratio=decrease,fps=15, pad=320:320:-1:-1:color=white@0.0, split [a][b]; [a] palettegen=reserve_transparent=on:transparency_color=ffffff [p]; [b][p] paletteuse`])
+							.toFormat('webp')
+							.save(ran)
     } else if ((isMedia || isQuotedImage) && args[0] == 'nobg') {
         const encmedia = isQuotedImage ? JSON.parse(JSON.stringify(m).replace('quotedM', 'm')).message.extendedTextMessage.contextInfo : m
         const media = await conn.downloadAndSaveMediaMessage(encmedia)
         ranw = getRandom('.webp')
         ranp = getRandom('.png')
         keyrmbg = 'bcAvZyjYAjKkp1cmK8ZgQvWH'
-        await removeBackgroundm.chatImageFile({ path: media, apiKey: keyrmbg.result, size: 'auto', type: 'auto', ranp }).then(res => {
-            fs.unlinkSync(media)
-            let buffer = Buffer.m.chat(res.base64img, 'base64')
-            fs.writeFileSync(ranp, buffer, (err) => {
-                if (err) return reply('Falló, se produjo un error, inténtelo de nuevo más tarde del.')
-            })
-            exec(`ffmpeg -i ${ranp} -vcodec libwebp -filter:v fps=fps=20 -lossless 1 -loop 0 -preset default -an -vsync 0 -s 512:512 ${ranw}`, (err) => {
-                fs.unlinkSync(ranp)
-                if (err) return m.reply('Error!')
-                buff = fs.readFileSync(ranw)
-                conn.sendMessage(m.chat, buff, MessageType.sticker, { quoted: m })
-            })
+        await removeBackgroundFromImageFile({path: media, apiKey: keyrmbg, size: 'auto', type: 'auto', ranp}).then(res => {
+							fs.unlinkSync(media)
+							let buffer = Buffer.from(res.base64img, 'base64')
+							fs.writeFileSync(ranp, buffer, (err) => {
+								if (err) return reply('Falló, se produjo un error, inténtelo de nuevo más tarde.')
+							})
+							exec(`ffmpeg -i ${ranp} -vcodec libwebp -filter:v fps=fps=20 -lossless 1 -loop 0 -preset default -an -vsync 0 -s 512:512 ${ranw}`, (err) => {
+								fs.unlinkSync(ranp)
+								if (err) return reply(mess.error.stick)
+								exec(`webpmux -set exif ${addMetadata('Aiden', authorname)} ${ranw} -o ${ranw}`, async (error) => {
+									if (error) return reply(mess.error.stick)
+									client.sendMessage(from, fs.readFileSync(ranw), sticker, {quoted: mek})
+									fs.unlinkSync(ranw)
+								})
         })
-    } else {
-        conn.reply(m.chat,`*[ ERROR ]*\n\nNo se pudo hacer una calcomanía gif, tal vez tu video es demasiado largo. `,m)
-    }
-}
+
+})}}
 handler.help = ['stickergif *(caption|reply)*','sgif *(caption|reply)*']
 handler.tags = ['sticker']
 handler.command = /^stickergif|stikergif|sgif$/i

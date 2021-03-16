@@ -23,7 +23,7 @@ global.timestamp = {
 const PORT = process.env.PORT || 3000
 global.opts = new Object(yargs(process.argv.slice(2)).exitProcess(false).parse())
 
-global.prefix = new RegExp('^[' + (opts['prefix'] || '‎xzXZ/i!#$%+£¢€¥^°=¶∆×÷π√✓©®:;?&.-\\').replace(/[|\\{}()[\]^$+*?.]/g, '\\$&') + ']')
+global.prefix = new RegExp('^[' + (opts['prefix'] || '‎/i!#$%+£¢€¥^°=¶∆×÷π√✓©®:;&.-\\').replace(/[|\\{}()[\]^$+*?.]/g, '\\$&') + ']')
 
 global.DATABASE = new (require('./lib/database'))(`${opts._[0] ? opts._[0] + '_' : ''}database.json`, null, 2)
 if (!global.DATABASE.data.users) global.DATABASE.data = {
@@ -115,7 +115,8 @@ global.reloadHandler = function () {
     conn.off('group-add', conn.onAdd)
     conn.off('group-leave', conn.onLeave)
   }
-  conn.welcome = 'Hola, @user!\nBienvenido al grupo @subject'
+  conn.welcome = 'Hola, @user!\nBienvenido al grupo @subject, Recuerda leer la descripcion'
+  conn.welcomer = '@user Se esta verificando en el grupo @subject'
   conn.bye = 'Adios @user!'
   conn.handler = handler.handler
   conn.onAdd = handler.welcome 

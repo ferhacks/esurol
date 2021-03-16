@@ -8,6 +8,7 @@ handler.before = m => {
 
   if (chat.antiLink && isGroupLink) m.reply('Eliminado!!')
 
+
   return true
 }
 

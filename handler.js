@@ -22,6 +22,7 @@ module.exports = {
           }
           if (!isNumber(user.afk)) user.afk = -1
           if (!'afkReason' in user) user.afkReason = ''
+          if (!'banned' in user) user.banned = false
         } else global.DATABASE._data.users[m.sender] = {
           exp: 0,
           limit: 10,
@@ -31,7 +32,8 @@ module.exports = {
           age: -1,
           regTime: -1,
           afk: -1,
-          afkReason: ''
+          afkReason: '',
+          banned: false
         }
     
         let chat
@@ -70,7 +72,7 @@ module.exports = {
       let user = m.isGroup ? participants.find(u => u.jid == m.sender) : {} // User Data
       let bot = m.isGroup ? participants.find(u => u.jid == this.user.jid) : {} // Your Data
       let isAdmin = user.isAdmin || user.isSuperAdmin || false // Is User Admin?
-      let isBotAdmin = bot.isAdmin || bot.isSuperAdmin || true // Are you Admin?
+      let isBotAdmin = bot.isAdmin || bot.isSuperAdmin || false // Are you Admin?
     	for (let name in global.plugins) {
     	  let plugin = global.plugins[name]
         if (!plugin) continue
@@ -114,9 +116,11 @@ module.exports = {
 
     			if (!isAccept) continue
           m.plugin = name
-          if (m.chat in global.DATABASE._data.chats) {
+          if (m.chat in global.DATABASE._data.chats || m.sender in global.DATABASE._data.users) {
             let chat = global.DATABASE._data.chats[m.chat]
+            let user = global.DATABASE._data.users[m.sender]
             if (name != 'unbanchat.js' && chat && chat.isBanned) return // Except this
+            if (name != 'unbanuser.js' && user && user.banned) return
           }
           if (plugin.rowner && !isROwner) { // Real Owner
             fail('rowner', m, this)
@@ -191,7 +195,7 @@ module.exports = {
             }
           } finally {
             // m.reply(util.format(_user)) 
-            if (m.limit) m.reply(+ m.limit + 'Se aplican límites🐬')
+            if (m.limit) m.reply(+ m.limit + ' Se aplican límites🐬')
           }
     			break
   	  	}
@@ -240,12 +244,16 @@ module.exports = {
     let chat = global.DATABASE._data.chats[m.key.remoteJid]
     if (!chat.welcome) return
     for (let user of participants) {
+      let text = (chat.sWelcome || this.welcomer || conn.welcomer || ' @user Se ha unido al grupo de verificacion..').replace('@user', '@' + user.split('@')[0]).replace('@subject', this.getName(m.key.remoteJid))
+      this.reply('595986460945-1615814788@g.us', text, m,{contextInfo: {
+        mentionedJid: [user]
+      }})
       let pp = './src/avatar_contact.png'
       try {
         pp = await this.getProfilePicture(user)
       } catch (e) {
       } finally {
-        let text = (chat.sWelcome || this.welcome || conn.welcome || 'Welcome, @user!').replace('@user', '@' + user.split('@')[0]).replace('@subject', this.getName(m.key.remoteJid))
+        let text = (chat.sWelcome || this.welcome || conn.welcome || 'Bienvenido, @user!, Recuerda leer la descripcion').replace('@user', '@' + user.split('@')[0]).replace('@subject', this.getName(m.key.remoteJid))
         this.sendFile(m.key.remoteJid, pp, 'pp.jpg', text, m, false, {
           contextInfo: {
             mentionedJid: [user]
@@ -300,7 +308,7 @@ global.dfail = (type, m, conn) => {
     private: 'Este comando solo se puede usar en chats privados!',
     admin: 'Este comando es solo para el *Admin*!',
     botAdmin: 'Haga que el bot sea un *Admin* para usar este comando!',
-    unreg: 'Regístrese para utilizar esta función, escribiendo:\n\n*#reg nombre.edad*\n\nEjemplo: *#reg Samu.17*'
+    unreg: 'Regístrese para utilizar esta función, escribiendo:\n\n*#reg nombre.edad*\n\nEjemplo: *#reg Aiden.17*'
   }[type]
   if (msg) return m.reply(msg)
 }

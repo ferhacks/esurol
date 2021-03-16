@@ -25,7 +25,7 @@ try {
 				global.DATABASE._data.users[user].isBanned = false
 				global.DATABASE._data.banned -= 1
 				var banTotal = global.DATABASE._data.banned
-				conn.reply(m.chat, `*UnBanned Sussess*\n*Primero da las gracias al propietario (👑Samu330👑*\n\n*Total Banned : ${banTotal}*`, m)
+				conn.reply(m.chat, `*UnBanned Sussess*\n*Primero da las gracias al propietario (👑Aiden👑*\n\n*Total Banned : ${banTotal}*`, m)
 			}
 	}	
 }
